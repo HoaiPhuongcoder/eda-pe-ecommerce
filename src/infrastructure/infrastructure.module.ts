@@ -1,5 +1,9 @@
 import { PrismaModule } from '@/infrastructure/database/prisma/prisma.module';
 import { Module } from '@nestjs/common';
+import { RedisModule } from './redis/redis.module';
 
-@Module({ imports: [PrismaModule], exports: [PrismaModule] })
+@Module({
+  imports: [PrismaModule, RedisModule],
+  exports: [PrismaModule, RedisModule],
+})
 export class InfrastructureModule {}
