@@ -1,13 +1,39 @@
 // bootstrap/http.bootstrap.ts
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
+import { TransformInterceptor } from '@/shared/interceptors/transform.interceptor';
 
 export async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
-
+  app.use(cookieParser());
+  const reflector = app.get(Reflector);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        const formattedErrors = validationErrors.map((error) => ({
+          field: error.property,
+          message: Object.values(
+            error.constraints as Record<string, string>,
+          ).join(),
+        }));
+        return new BadRequestException({
+          statusCode: 400,
+          messages: formattedErrors,
+          error: 'Bad Request',
+        });
+      },
+    }),
+  );
+  app.useGlobalInterceptors(new TransformInterceptor(reflector));
+  app.enableShutdownHooks();
   const config = new DocumentBuilder()
     .setTitle('PE_MARKET_ECOMMERCE')
     .setDescription('The Ecommerce API description')
