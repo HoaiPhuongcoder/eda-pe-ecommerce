@@ -10,7 +10,15 @@ export class PrismaService
   constructor() {
     const connectionString = `${process.env.DATABASE_URL}`;
     const adapter = new PrismaPg({ connectionString });
-    super({ adapter });
+    super({
+      adapter,
+      log: [
+        { emit: 'stdout', level: 'info' },
+        { emit: 'stdout', level: 'warn' },
+        { emit: 'stdout', level: 'error' },
+        { emit: 'stdout', level: 'query' },
+      ],
+    });
   }
   async onModuleInit() {
     await this.$connect();

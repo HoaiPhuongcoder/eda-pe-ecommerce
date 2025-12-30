@@ -1,9 +1,10 @@
-import { PrismaModule } from '@/infrastructure/database/prisma/prisma.module';
+import { PrismaModule } from './database';
+import { RedisModule } from './redis';
 import { Module } from '@nestjs/common';
-import { RedisModule } from './redis/redis.module';
+import { CryptoModule } from './security/crypto.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule],
+  imports: [PrismaModule, RedisModule, CryptoModule],
   exports: [PrismaModule, RedisModule],
 })
 export class InfrastructureModule {}

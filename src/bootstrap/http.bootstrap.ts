@@ -3,15 +3,23 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  ClassSerializerInterceptor,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { TransformInterceptor } from '@/shared/interceptors/transform.interceptor';
 
 export async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
-
+  // Config Lib
+  // -------------------------------------------------------------------------------------------
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+
+  // Config Pipe, Mid, Interceptor, Guard Global
+  // -------------------------------------------------------------------------------------------
   const reflector = app.get(Reflector);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -32,8 +40,14 @@ export async function bootstrapHttp() {
       },
     }),
   );
-  app.useGlobalInterceptors(new TransformInterceptor(reflector));
+  app.useGlobalInterceptors(
+    new TransformInterceptor(reflector),
+    new ClassSerializerInterceptor(reflector),
+  );
   app.enableShutdownHooks();
+
+  // Config Swagger ----------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------
   const config = new DocumentBuilder()
     .setTitle('PE_MARKET_ECOMMERCE')
     .setDescription('The Ecommerce API description')
