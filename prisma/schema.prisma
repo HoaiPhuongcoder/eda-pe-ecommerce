@@ -462,12 +462,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-enum VerificationCodeType {
-  REGISTER
-  FORGOT_PASSWORD
-  LOGIN
-  DISABLE_2FA
-}
 
 enum UserStatus {
   ACTIVE
