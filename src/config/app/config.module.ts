@@ -1,3 +1,4 @@
+import { allConfigs } from '@/config/app/namespaces';
 import { validateEnvironment } from '@/config/env';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -6,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: allConfigs,
       validate: validateEnvironment,
       envFilePath: ['.env'],
     }),

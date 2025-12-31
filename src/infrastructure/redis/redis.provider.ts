@@ -1,14 +1,15 @@
+import { redisConfig } from '@/config';
 import { REDIS_CLIENT } from '@/infrastructure/redis/redis.constants';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
 export const RedisProvider = {
   provide: REDIS_CLIENT,
-  inject: [ConfigService],
-  useFactory: (configService: ConfigService) => {
+  inject: [redisConfig.KEY],
+  useFactory: (config: ConfigType<typeof redisConfig>) => {
     const redis = new Redis({
-      host: configService.get<string>('REDIS_HOST'),
-      port: configService.get('REDIS_PORT'),
-      password: configService.get<string>('REDIS_PASSWORD') || undefined,
+      host: config.host,
+      port: config.port,
+      password: config.password,
     });
 
     redis.on('connect', () => {

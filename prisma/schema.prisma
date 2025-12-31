@@ -51,15 +51,16 @@ model Language {
 
 model User {
   id          String     @id @default(uuid(7))
-  email       String
+  email       String   @unique @db.VarChar(500)
   name        String  @db.VarChar(500)
   password    String  @db.VarChar(500)
-  phoneNumber String  @db.VarChar(50)
+  phoneNumber String  @unique  @db.VarChar(50)
   avatar      String? @db.VarChar(1000)
 
   status                      UserStatus            @default(INACTIVE)
   roleId                      Int
   role                        Role                  @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  addresses                  UserAddress[]         @relation("UserAddress")
   orders                      Order[]
   reviews                     Review[]
   createdPermissions          Permission[]          @relation("PermissionCreatedBy")
@@ -76,6 +77,7 @@ model User {
   soldOrders                  Order[]               @relation("Shop")
   createdUserTranslations     UserTranslation[]     @relation("UserTranslationCreatedBy")
   userTranslations            UserTranslation[]     @relation("User")
+  createdDiscounts            Discount[]            @relation("DiscountCreatedBy")
   sentMessages                Message[]             @relation("FromUser")
   receivedMessages            Message[]             @relation("ToUser")
 
@@ -94,6 +96,7 @@ model User {
   @@index([deletedAt])
 }
 
+
 model UserTranslation {
   id          String     @id @default(uuid(7))
   userId      String
@@ -109,9 +112,31 @@ model UserTranslation {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
+  @@unique([userId, languageId])
   @@index([deletedAt])
 }
+
+
+model UserAddress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserAddress", fields: [userId], references: [id])
+
+  fullName  String
+  phone     String
+  address   String
+  ward      String?
+  district  String
+  city      String
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@index([deletedAt])
+}
+
 
 
 
@@ -157,18 +182,18 @@ model Product {
   id                  String                 @id @default(uuid(7))
   publishedAt         DateTime?
   name                String               @db.VarChar(500)
-  basePrice           Float
-  virtualPrice        Float
+  basePrice           Decimal              @db.Decimal(10,2)
+  virtualPrice        Decimal?             @db.Decimal(10,2)
   brandId             String
   brand               Brand                @relation(fields: [brandId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   images              String[]
   categories          Category[]
+  ProductSlugs        ProductSlug[]
   /// [Variants]
   variants            Json
   skus                SKU[]
   reviews             Review[]
   productTranslations ProductTranslation[]
-  orders              Order[]
   productSKUSnapshots ProductSKUSnapshot[]
 
   createdById String
@@ -200,16 +225,20 @@ model ProductTranslation {
 
   @@index([deletedAt])
   @@index([productId])
+  @@unique([productId, languageId])
 }
 
 model ProductSlug {
   id BigInt @id @default(autoincrement())
   productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   slug String
   isCurrent Boolean @default(true)
   createdAt DateTime @default(now())
-
-  @@unique([slug])
+  updateAt DateTime @updatedAt
+  deletedAt DateTime? 
+  
+  @@unique([slug, deletedAt])
   @@index([slug])
   @@index([productId, isCurrent])
 }
@@ -251,14 +280,14 @@ model CategoryTranslation {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
+  @@unique([categoryId, languageId])
   @@index([deletedAt])
 }
 
 model SKU {
   id                  String               @id @default(uuid(7))
   value               String               @db.VarChar(500)
-  price               Float
+  price               Decimal              @db.Decimal(10,2)
   stock               Int
   image               String
   productId           String
@@ -310,7 +339,7 @@ model BrandTranslation {
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
+  @@unique([brandId, languageId])
   @@index([deletedAt])
 }
 
@@ -332,7 +361,7 @@ model BrandTranslation {
 model ProductSKUSnapshot {
   id          String    @id @default(uuid(7))
   productName String @db.VarChar(500)
-  skuPrice    Float
+  skuPrice    Decimal  @db.Decimal(10, 2)
   image       String
   skuValue    String @db.VarChar(500)
   skuId       String?
@@ -349,15 +378,68 @@ model ProductSKUSnapshot {
   createdAt DateTime @default(now())
 }
 
+model Discount {
+  id              String   @id @default(uuid(7)) 
+
+  code            String   @unique @db.VarChar(50)
+  name            String?  @db.VarChar(255)
+  description     String?
+
+  discountType    DiscountType
+  discountValue   Decimal  @db.Decimal(10, 2)
+
+  maxDiscount     Decimal? @db.Decimal(10, 2)
+  minOrderValue   Decimal  @default(0) @db.Decimal(10, 2)
+
+  startAt         DateTime
+  endAt           DateTime
+
+  usageLimit      Int?
+  usedCount       Int      @default(0)
+
+  status          DiscountStatus
+
+  orders          Order[] 
+
+  createdById     String?
+  createdBy       User?    @relation("DiscountCreatedBy",fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  targets         DiscountTarget[]
+  
+
+  @@index([code])
+  @@index([status, startAt, endAt])
+}
+
+model DiscountTarget {
+  id          String              @id @default(uuid(7))
+  discountId String
+
+  targetType DiscountTargetType
+  targetId   String?
+  discount   Discount            @relation(fields: [discountId], references: [id], onDelete: Cascade)
+
+  @@index([discountId])
+  @@index([targetType, targetId])
+}
+
+
 model Order {
   id          String                  @id @default(uuid(7))
   userId      String
   user        User                 @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   status      OrderStatus
   items       ProductSKUSnapshot[]
-  products    Product[]
   reviews     Review[]
-  /// [Receiver]
+
+  subtotal Decimal @db.Decimal(10,2)
+  discountId String?
+  discount   Discount?             @relation( fields: [discountId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  discountSnapshot Json
+  totalAmount Decimal @db.Decimal(10,2)
+  
   receiver    Json
   shopId      String?
   shop        User?                @relation("Shop", fields: [shopId], references: [id], onDelete: SetNull, onUpdate: NoAction)
@@ -371,7 +453,6 @@ model Order {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@index([deletedAt])
   @@index([status, deletedAt])
 }
 
@@ -422,9 +503,9 @@ model PaymentTransaction {
   transactionDate    DateTime @default(now())
   accountNumber      String?  @db.VarChar(100)
   subAccount         String?  @db.VarChar(250)
-  amountIn           Int      @default(0)
-  amountOut          Int      @default(0)
-  accumulated        Int      @default(0)
+  amountIn           Decimal @db.Decimal(18,2)      @default(0)
+  amountOut          Decimal @db.Decimal(18,2)      @default(0)
+  accumulated        Decimal @db.Decimal(18,2)      @default(0)
   code               String?  @db.VarChar(250)
   transactionContent String?  @db.Text
   referenceNumber    String?  @db.VarChar(255)
@@ -487,4 +568,24 @@ enum AuditActorType {
   USER
   ADMIN
   SYSTEM
+}
+
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum DiscountStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum DiscountTargetType {
+  PRODUCT
+  CATEGORY
+  USER
+  ROLE
+  ALL
 }
