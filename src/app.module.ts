@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AppConfigModule, ThrottlerConfig } from '@/config';
 import { SharedModule } from '@/shared';
 import { InfrastructureModule } from '@/infrastructure';
+import { UsersModule } from './modules/users/users.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -12,6 +13,7 @@ import { InfrastructureModule } from '@/infrastructure';
     InfrastructureModule,
     SharedModule,
     AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
