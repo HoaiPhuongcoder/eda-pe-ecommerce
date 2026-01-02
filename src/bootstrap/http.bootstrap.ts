@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { TransformInterceptor } from '@/shared/interceptors/transform.interceptor';
+import { LoggingInterceptor } from '@/shared/interceptors/logging.interceptor';
 
 export async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
@@ -41,6 +42,7 @@ export async function bootstrapHttp() {
     }),
   );
   app.useGlobalInterceptors(
+    new LoggingInterceptor(),
     new TransformInterceptor(reflector),
     new ClassSerializerInterceptor(reflector),
   );
