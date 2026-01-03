@@ -1,9 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import { RegisterUserCommand } from '@/modules/auth/application/commands/register-user.command';
+import { RegisterUserDto } from '@/modules/auth/application/dtos/register-user.dto';
+import { Body, Controller, Post } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('auth')
 export class AuthController {
-  @Get('register')
-  register() {
-    return { message: 'Register endpoint' };
+  constructor(private readonly commandBus: CommandBus) {}
+  @Post('register')
+  async register(@Body() registerDto: RegisterUserDto) {
+    await this.commandBus.execute(
+      new RegisterUserCommand(registerDto.email, registerDto.password),
+    );
   }
 }

@@ -9,6 +9,7 @@ export class AuthUser extends AggregateRoot {
     private _id: string | null,
     private _email: Email,
     private _password: HashedPassword,
+    private _roleId: number,
     private _status: UserStatus,
   ) {
     super();
@@ -28,13 +29,21 @@ export class AuthUser extends AggregateRoot {
   get status(): UserStatus {
     return this._status;
   }
+  get roleId(): number {
+    return this._roleId;
+  }
 
-  static register(email: Email, password: HashedPassword): AuthUser {
+  static register(
+    email: Email,
+    password: HashedPassword,
+    roleId: number,
+  ): AuthUser {
     const user = new AuthUser(
       null, // ID do DB tạo
       email,
       password,
-      UserStatus.ACTIVE,
+      roleId,
+      UserStatus.INACTIVE,
     );
 
     user.apply(new UserCreatedEvent(email.value));

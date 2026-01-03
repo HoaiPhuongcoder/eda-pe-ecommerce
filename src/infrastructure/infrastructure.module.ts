@@ -5,6 +5,6 @@ import { CryptoModule } from './security/crypto.module';
 
 @Module({
   imports: [PrismaModule, RedisModule, CryptoModule],
-  exports: [PrismaModule, RedisModule],
+  exports: [PrismaModule, RedisModule, CryptoModule],
 })
 export class InfrastructureModule {}
