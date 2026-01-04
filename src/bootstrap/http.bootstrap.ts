@@ -11,9 +11,33 @@ import {
 import { ValidationError } from 'class-validator';
 import { TransformInterceptor } from '@/shared/interceptors/transform.interceptor';
 import { LoggingInterceptor } from '@/shared/interceptors/logging.interceptor';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 export async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
+
+  // Config Kafka Lib
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'pe_market_ecommerce',
+        brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+        retry: {
+          initialRetryTime: 300,
+          retries: 10,
+        },
+      },
+      consumer: {
+        groupId: 'pe_market_ecommerce_group',
+        allowedNodeEnvironmentFlags: true,
+      },
+      subscribe: {
+        fromBeginning: true,
+      },
+    },
+  });
+
   // Config Lib
   // -------------------------------------------------------------------------------------------
   app.setGlobalPrefix('api');

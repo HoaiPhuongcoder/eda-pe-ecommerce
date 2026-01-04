@@ -13,10 +13,10 @@ import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-passwor
 import { RawPassword } from '@/modules/auth/domain/value-objects/raw-password.vo';
 import { PASSWORD_HASHER, type PasswordHasher } from '@/shared';
 import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { CommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 @CommandHandler(RegisterUserCommand)
-export class RegisterUserHandler {
+export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand> {
   constructor(
     @Inject(PASSWORD_HASHER) private readonly passwordHasher: PasswordHasher,
     @Inject(ROLE_READER_PORT) private readonly roleReaderPort: RoleReaderPort,
