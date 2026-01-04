@@ -30,6 +30,20 @@ model AuditLog {
 @@index([createdAt])
 
 }
+model IntegrationEventOutbox {
+  id String @id @default(uuid(7))
+  type String @db.VarChar(255)
+  payload Json
+  metadata Json?
+  status OutboxStatus @default(PENDING)
+  attempts Int @default(0)
+  lastError String? @db.Text
+  processedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
 
 
 model Language {
@@ -528,6 +542,20 @@ model Message {
 @@index([toUserId])
 }
 
+
+enum AuditActorType {
+  USER
+  ADMIN
+  SYSTEM
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 enum PaymentStatus {
   PENDING
   SUCCESS
@@ -564,11 +592,7 @@ enum MediaType {
   IMAGE
   VIDEO
 }
-enum AuditActorType {
-  USER
-  ADMIN
-  SYSTEM
-}
+
 
 
 enum DiscountType {
