@@ -18,6 +18,7 @@ export const RedisProvider = {
 
     redis.on('error', (err) => {
       console.error('❌ Redis error', err);
+      process.exit(1);
     });
 
     return redis;

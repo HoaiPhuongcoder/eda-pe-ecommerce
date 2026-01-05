@@ -1,8 +1,9 @@
 import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
-import { UserCreatedEvent } from '@/modules/auth/domain/events/user-created.event';
+import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-created.event';
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
 import { AggregateRoot } from '@nestjs/cqrs';
+import { v7 } from 'uuid';
 
 export class AuthUser extends AggregateRoot {
   private constructor(
@@ -38,15 +39,10 @@ export class AuthUser extends AggregateRoot {
     password: HashedPassword,
     roleId: number,
   ): AuthUser {
-    const user = new AuthUser(
-      null, // ID do DB tạo
-      email,
-      password,
-      roleId,
-      UserStatus.INACTIVE,
-    );
+    const id = v7();
+    const user = new AuthUser(id, email, password, roleId, UserStatus.INACTIVE);
 
-    user.apply(new UserCreatedEvent(email.value));
+    user.apply(new UserRegisteredEvent(email.value, id));
     return user;
   }
 

@@ -38,7 +38,5 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
     const user = AuthUser.register(emailVO, hashedPasswordVO, roleId);
 
     await this.authUserRepository.save(user);
-
-    user.commit();
   }
 }

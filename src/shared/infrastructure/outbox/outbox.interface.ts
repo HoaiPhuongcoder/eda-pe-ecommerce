@@ -2,7 +2,7 @@ import { OutboxStatus } from '@/generated/prisma/enums';
 export interface IOutboxEvent {
   id: string;
   type: string;
-  Payload: unknown;
+  payload: unknown;
   metadata: unknown;
   status: OutboxStatus;
   attempts: number;
