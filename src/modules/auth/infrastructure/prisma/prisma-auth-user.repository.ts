@@ -7,7 +7,6 @@ import { Injectable } from '@nestjs/common';
 export class PrismaAuthUserRepository implements AuthUserRepository {
   constructor(private readonly prismaService: PrismaService) {}
   async save(user: AuthUser): Promise<void> {
-    const domainEvents = user.getUncommittedEvents();
     await this.prismaService.user.create({
       data: {
         email: user.email.value,
