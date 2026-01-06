@@ -7,6 +7,7 @@ import { RegisterUserHandler } from '@/modules/auth/application/handlers/registe
 import { PrismaRoleReader } from '@/modules/auth/infrastructure/prisma/prisma-role.reader';
 import { AUTH_USER_REPOSITORY } from '@/modules/auth/domain/repositories/auth-user.repository';
 import { PrismaAuthUserRepository } from '@/modules/auth/infrastructure/prisma/prisma-auth-user.repository';
+import { AuthOutboxWorker } from '@/modules/auth/infrastructure/jobs/auth-outbox.worker';
 
 @Module({
   controllers: [AuthController],
@@ -21,6 +22,7 @@ import { PrismaAuthUserRepository } from '@/modules/auth/infrastructure/prisma/p
       provide: ROLE_READER_PORT,
       useClass: PrismaRoleReader,
     },
+    AuthOutboxWorker,
   ],
 })
 export class AuthModule {}

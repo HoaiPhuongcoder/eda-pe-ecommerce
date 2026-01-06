@@ -1,3 +1,4 @@
+import { OutboxStatus } from '@/generated/prisma/enums';
 import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 import { AuthUser } from '@/modules/auth/domain/aggregates/auth-user-aggregate';
 import { AuthUserRepository } from '@/modules/auth/domain/repositories/auth-user.repository';
@@ -32,8 +33,9 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
               traceId: uuidv7(),
               source: 'auth-module',
               version: '1.0',
+              aggregateId: authUser.id,
             },
-            status: 'PENDING',
+            status: OutboxStatus.PENDING,
           },
         });
       }
