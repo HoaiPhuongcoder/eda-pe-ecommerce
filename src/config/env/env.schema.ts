@@ -9,6 +9,7 @@ export const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string(),
   REDIS_PASSWORD: z.string(),
+  KAFKA_BROKER: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

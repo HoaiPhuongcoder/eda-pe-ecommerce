@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { Partitioners } from 'kafkajs';
 
 // src/infrastructure/kafka/kafka.module.ts
 export const KAFKA_SERVICE = Symbol('KAFKA_SERVICE');
@@ -14,6 +15,9 @@ export const KAFKA_SERVICE = Symbol('KAFKA_SERVICE');
           client: {
             clientId: 'pe_market_producer',
             brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+          },
+          producer: {
+            createPartitioner: Partitioners.DefaultPartitioner,
           },
         },
       },

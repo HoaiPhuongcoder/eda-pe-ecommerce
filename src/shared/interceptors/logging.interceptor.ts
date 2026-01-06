@@ -35,7 +35,7 @@ export class LoggingInterceptor implements NestInterceptor {
         this.logger.log(`${formatResponse} - duration: ${duration}ms`);
       }),
       catchError((err) => {
-        const formatError = `[Error] - ${new Date().toLocaleString()} ${method} ${path} - statusCode: ${
+        const formatError = `[Error] -  ${method} ${path} - statusCode: ${
           response.statusCode
         } - message: ${err || 'N/A'})}`;
         const duration = Date.now() - start;

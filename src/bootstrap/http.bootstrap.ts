@@ -1,5 +1,5 @@
 // bootstrap/http.bootstrap.ts
-import { NestFactory, Reflector } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
@@ -12,6 +12,7 @@ import { ValidationError } from 'class-validator';
 import { TransformInterceptor } from '@/shared/interceptors/transform.interceptor';
 import { LoggingInterceptor } from '@/shared/interceptors/logging.interceptor';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { PrismaClientExceptionFilter } from '@/shared/filters/prisma-client-exception.filter';
 
 export async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
@@ -46,6 +47,11 @@ export async function bootstrapHttp() {
   // Config Pipe, Mid, Interceptor, Guard Global
   // -------------------------------------------------------------------------------------------
   const reflector = app.get(Reflector);
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+
+  app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -82,7 +88,7 @@ export async function bootstrapHttp() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);
-
+  app.enableShutdownHooks();
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
   console.log(`🚀 pe_market_ecommerce running on port ${port}`);
