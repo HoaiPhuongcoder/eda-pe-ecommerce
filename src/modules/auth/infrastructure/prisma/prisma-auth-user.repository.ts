@@ -33,14 +33,14 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
             },
           },
           update: {
-            code: authUser.verificationCode.value,
+            code: authUser.verificationCode.hash,
             expiresAt: authUser.verificationCode.expiredAt,
             attempts: 0,
           },
           create: {
             email: authUser.email.value,
             type: 'REGISTER',
-            code: authUser.verificationCode.value,
+            code: authUser.verificationCode.hash,
             expiresAt: authUser.verificationCode.expiredAt,
             attempts: 0,
           },

@@ -37,10 +37,15 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
     if (!roleId) {
       throw new InternalServerErrorException('Default role not found');
     }
-    const secretKey = this.configService.get<string>('OTP_SECRET');
-    const otpCode = VerificationCode.generate(secretKey);
+    const secretKey = this.configService.getOrThrow<string>('OTP_SECRET');
+    const verificationCode = VerificationCode.generate(secretKey);
 
-    const user = AuthUser.register(emailVO, hashedPasswordVO, roleId, otpCode);
+    const user = AuthUser.register(
+      emailVO,
+      hashedPasswordVO,
+      roleId,
+      verificationCode,
+    );
 
     await this.authUserRepository.save(user);
   }
