@@ -11,6 +11,7 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
 
   async save(authUser: AuthUser): Promise<void> {
     const domainEvents = authUser.getUncommittedEvents();
+    const verificationCode = authUser.verificationCode;
 
     await this.prismaService.$transaction(async (tx) => {
       await tx.user.create({
@@ -22,6 +23,29 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
           roleId: authUser.roleId,
         },
       });
+
+      if (verificationCode) {
+        await tx.verificationCode.upsert({
+          where: {
+            email_type: {
+              email: authUser.email.value,
+              type: 'REGISTER',
+            },
+          },
+          update: {
+            code: authUser.verificationCode.value,
+            expiresAt: authUser.verificationCode.expiredAt,
+            attempts: 0,
+          },
+          create: {
+            email: authUser.email.value,
+            type: 'REGISTER',
+            code: authUser.verificationCode.value,
+            expiresAt: authUser.verificationCode.expiredAt,
+            attempts: 0,
+          },
+        });
+      }
 
       for (const event of domainEvents) {
         const { ...payload } = event;

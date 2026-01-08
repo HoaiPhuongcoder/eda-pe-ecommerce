@@ -111,6 +111,24 @@ model User {
 }
 
 
+
+model VerificationCode {
+  id    Int                  @id @default(autoincrement())
+  email String               @db.VarChar(500)
+  code  String               @db.VarChar(100)
+  type  VerificationCodeType
+
+  usedAt      DateTime?
+  attempts    Int      @default(0)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([email, type])
+  @@unique([email, type])
+  @@index([expiresAt])
+}
+
 model UserTranslation {
   id          String     @id @default(uuid(7))
   userId      String
@@ -542,6 +560,13 @@ model Message {
 @@index([toUserId])
 }
 
+
+enum VerificationCodeType {
+  REGISTER
+  FORGOT_PASSWORD
+  LOGIN
+  DISABLE_2FA
+}
 
 enum AuditActorType {
   USER

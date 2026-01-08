@@ -7,6 +7,7 @@ import { SharedModule } from '@/shared';
 import { InfrastructureModule } from '@/infrastructure';
 import { UsersModule } from './modules/users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationModule } from './modules/notification/notification.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -16,6 +17,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     SharedModule,
     AuthModule,
     UsersModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

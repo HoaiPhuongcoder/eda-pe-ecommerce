@@ -11,8 +11,10 @@ import {
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
 import { RawPassword } from '@/modules/auth/domain/value-objects/raw-password.vo';
+import { VerificationCode } from '@/modules/auth/domain/value-objects/verification-code.vo';
 import { PASSWORD_HASHER, type PasswordHasher } from '@/shared';
 import { Inject, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 @CommandHandler(RegisterUserCommand)
@@ -22,6 +24,7 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
     @Inject(ROLE_READER_PORT) private readonly roleReaderPort: RoleReaderPort,
     @Inject(AUTH_USER_REPOSITORY)
     private readonly authUserRepository: AuthUserRepository,
+    private readonly configService: ConfigService,
   ) {}
   async execute(command: RegisterUserCommand): Promise<void> {
     const { email, password } = command;
@@ -34,8 +37,10 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
     if (!roleId) {
       throw new InternalServerErrorException('Default role not found');
     }
+    const secretKey = this.configService.get<string>('OTP_SECRET');
+    const otpCode = VerificationCode.generate(secretKey);
 
-    const user = AuthUser.register(emailVO, hashedPasswordVO, roleId);
+    const user = AuthUser.register(emailVO, hashedPasswordVO, roleId, otpCode);
 
     await this.authUserRepository.save(user);
   }

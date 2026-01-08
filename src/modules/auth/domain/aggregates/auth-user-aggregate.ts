@@ -2,20 +2,22 @@ import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
 import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-created.event';
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
+import { VerificationCode } from '@/modules/auth/domain/value-objects/verification-code.vo';
 import { AggregateRoot } from '@nestjs/cqrs';
 import { v7 } from 'uuid';
 
 export class AuthUser extends AggregateRoot {
   private constructor(
-    private _id: string | null,
+    private _id: string,
     private _email: Email,
     private _password: HashedPassword,
     private _roleId: number,
     private _status: UserStatus,
+    private _verificationCode?: VerificationCode,
   ) {
     super();
   }
-  get id(): string | null {
+  get id(): string {
     return this._id;
   }
 
@@ -34,15 +36,33 @@ export class AuthUser extends AggregateRoot {
     return this._roleId;
   }
 
+  get verificationCode(): VerificationCode | undefined {
+    return this._verificationCode;
+  }
+
   static register(
     email: Email,
     password: HashedPassword,
     roleId: number,
+    verificationCode: VerificationCode,
   ): AuthUser {
     const id = v7();
-    const user = new AuthUser(id, email, password, roleId, UserStatus.INACTIVE);
+    const user = new AuthUser(
+      id,
+      email,
+      password,
+      roleId,
+      UserStatus.INACTIVE,
+      verificationCode,
+    );
 
-    user.apply(new UserRegisteredEvent(email.value, id));
+    user.apply(
+      new UserRegisteredEvent({
+        aggregateId: user.id,
+        email: user.email.value,
+        otp: verificationCode.code,
+      }),
+    );
     return user;
   }
 

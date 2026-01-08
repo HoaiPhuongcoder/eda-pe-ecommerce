@@ -9,5 +9,3 @@ import { KafkaModule } from '@/infrastructure/kafka/kafka.module';
   exports: [PrismaModule, RedisModule, CryptoModule, KafkaModule],
 })
 export class InfrastructureModule {}
-
-helo
