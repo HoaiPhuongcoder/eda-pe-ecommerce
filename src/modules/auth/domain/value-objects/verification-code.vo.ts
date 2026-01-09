@@ -1,4 +1,4 @@
-import { createHmac, randomInt } from 'crypto';
+import { createHmac, randomInt } from 'node:crypto';
 
 export class VerificationCode {
   constructor(
