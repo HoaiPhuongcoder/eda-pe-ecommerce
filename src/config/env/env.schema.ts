@@ -11,6 +11,8 @@ export const envSchema = z.object({
   REDIS_PASSWORD: z.string(),
   KAFKA_BROKER: z.string().min(1),
   OTP_SECRET: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1),
+  RESEND_FROM_EMAIL: z.email(),
 });
 
 export type Env = z.infer<typeof envSchema>;
