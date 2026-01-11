@@ -8,12 +8,11 @@ import { InfrastructureModule } from '@/infrastructure';
 import { UsersModule } from './modules/users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './modules/notification/notification.module';
-import { BullMQConfig } from '@/infrastructure/queue/bull-mq.config';
+
 @Module({
   imports: [
     AppConfigModule,
     ThrottlerConfig,
-    BullMQConfig,
     ScheduleModule.forRoot(),
     InfrastructureModule,
     SharedModule,
