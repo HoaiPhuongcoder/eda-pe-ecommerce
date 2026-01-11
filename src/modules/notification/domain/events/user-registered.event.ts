@@ -1,6 +1,6 @@
 import { DomainEvent } from '@/shared';
 
-export class UserOtpRequestedEvent extends DomainEvent {
+export class UserRegisteredEvent extends DomainEvent {
   constructor(
     public readonly aggregateId: string,
     public readonly email: string,

@@ -1,8 +1,8 @@
 import { v7 as uuidv7 } from 'uuid';
 
 export abstract class DomainEvent {
-  public readonly eventId: string;
   public readonly aggregateId: string;
+  public readonly eventId: string;
   public readonly occurredOn: Date;
 
   constructor(props: { aggregateId: string }) {

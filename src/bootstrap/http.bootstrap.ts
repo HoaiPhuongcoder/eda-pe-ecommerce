@@ -90,6 +90,7 @@ export async function bootstrapHttp() {
   SwaggerModule.setup('api/docs', app, documentFactory);
   app.enableShutdownHooks();
   const port = Number(process.env.PORT ?? 3000);
+  await app.startAllMicroservices();
   await app.listen(port);
   console.log(`🚀 pe_market_ecommerce running on port ${port}`);
 }

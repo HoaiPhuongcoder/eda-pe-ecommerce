@@ -1,5 +1,5 @@
 import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
-import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-created.event';
+import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-registered.event';
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
 import { VerificationCode } from '@/modules/auth/domain/value-objects/verification-code.vo';
@@ -57,11 +57,7 @@ export class AuthUser extends AggregateRoot {
     );
 
     user.apply(
-      new UserRegisteredEvent({
-        aggregateId: user.id,
-        email: user.email.value,
-        otp: verificationCode.code,
-      }),
+      new UserRegisteredEvent(user.id, user.email.value, verificationCode.code),
     );
     return user;
   }

@@ -51,7 +51,6 @@ export abstract class BaseOutboxWorker {
             key: kafkaKey,
             value: {
               ...payload,
-              _metadata: record.metadata,
             },
           }),
         );
