@@ -1,4 +1,4 @@
-import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
+import { UserStatus } from '@/generated/prisma/enums';
 import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-registered.event';
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';

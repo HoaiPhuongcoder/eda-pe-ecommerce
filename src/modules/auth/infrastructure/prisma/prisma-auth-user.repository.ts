@@ -2,8 +2,9 @@ import { OutboxStatus, VerificationCodeType } from '@/generated/prisma/enums';
 import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 import { AuthUser } from '@/modules/auth/domain/aggregates/auth-user-aggregate';
 import { MODULE_NAME } from '@/modules/auth/domain/enums/auth-constant';
+import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
 import { AuthUserRepository } from '@/modules/auth/domain/repositories/auth-user.repository';
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 
 @Injectable()
@@ -15,15 +16,32 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
     const verificationCode = authUser.verificationCode;
 
     await this.prismaService.$transaction(async (tx) => {
-      await tx.user.create({
-        data: {
-          id: authUser.id ?? undefined,
-          email: authUser.email.value,
-          password: authUser.password.value,
-          status: authUser.status,
-          roleId: authUser.roleId,
-        },
+      const existingUser = await tx.user.findUnique({
+        where: { email: authUser.email.value },
       });
+
+      if (existingUser) {
+        if (existingUser.status === UserStatus.ACTIVE) {
+          throw new ConflictException('Email is already registered');
+        }
+        // Nếu là INACTIVE -> Update ghi đè
+        await tx.user.update({
+          where: { email: authUser.email.value },
+          data: {
+            password: authUser.password.value,
+          },
+        });
+      } else {
+        await tx.user.create({
+          data: {
+            id: authUser.id,
+            email: authUser.email.value,
+            password: authUser.password.value,
+            status: authUser.status,
+            roleId: authUser.roleId,
+          },
+        });
+      }
 
       if (verificationCode) {
         await tx.verificationCode.upsert({
