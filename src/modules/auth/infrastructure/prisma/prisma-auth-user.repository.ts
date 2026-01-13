@@ -21,7 +21,10 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
       });
 
       if (existingUser) {
-        if (existingUser.status === UserStatus.ACTIVE) {
+        if (
+          existingUser.status === UserStatus.ACTIVE ||
+          existingUser.status === UserStatus.BLOCKED
+        ) {
           throw new ConflictException('Email is already registered');
         }
         // Nếu là INACTIVE -> Update ghi đè
