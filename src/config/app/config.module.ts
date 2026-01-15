@@ -10,6 +10,9 @@ import { ConfigModule } from '@nestjs/config';
       load: allConfigs,
       validate: validateEnvironment,
       envFilePath: ['.env'],
+      ignoreEnvFile:
+        process.env.NODE_ENV === 'production' ||
+        process.env.NODE_ENV === 'test',
     }),
   ],
 })

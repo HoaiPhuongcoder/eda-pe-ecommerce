@@ -8,7 +8,7 @@ export const envSchema = z.object({
   DATABASE_URL: z.url(),
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string(),
-  REDIS_PASSWORD: z.string(),
+  REDIS_PASSWORD: z.string().optional(),
   KAFKA_BROKER: z.string().min(1),
   OTP_SECRET: z.string().min(1),
   RESEND_API_KEY: z.string().min(1),

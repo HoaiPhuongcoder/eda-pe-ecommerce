@@ -4,6 +4,9 @@ import { AuthUser } from '@/modules/auth/domain/aggregates/auth-user-aggregate';
 import { MODULE_NAME } from '@/modules/auth/domain/enums/auth-constant';
 import { UserStatus } from '@/modules/auth/domain/enums/user-status.enum';
 import { AuthUserRepository } from '@/modules/auth/domain/repositories/auth-user.repository';
+import { Email } from '@/modules/auth/domain/value-objects/email.vo';
+import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
+import { VerificationCode } from '@/modules/auth/domain/value-objects/verification-code.vo';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 
@@ -86,5 +89,43 @@ export class PrismaAuthUserRepository implements AuthUserRepository {
       }
     });
     authUser.commit();
+  }
+
+  async findByEmail(email: string): Promise<AuthUser | null> {
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const verificationCode =
+      await this.prismaService.verificationCode.findUnique({
+        where: {
+          email_type: {
+            email: user.email,
+            type: VerificationCodeType.REGISTER,
+          },
+        },
+      });
+
+    let verificationCodeVO: VerificationCode | undefined;
+    if (verificationCode) {
+      verificationCodeVO = new VerificationCode(
+        '',
+        verificationCode.code,
+        verificationCode.expiresAt,
+      );
+    }
+
+    return AuthUser.restore(
+      user.id,
+      new Email(user.email),
+      HashedPassword.fromHash(user.password),
+      user.roleId,
+      user.status,
+      verificationCodeVO,
+    );
   }
 }

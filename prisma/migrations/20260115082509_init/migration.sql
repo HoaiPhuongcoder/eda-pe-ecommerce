@@ -1,4 +1,13 @@
 -- CreateEnum
+CREATE TYPE "VerificationCodeType" AS ENUM ('REGISTER', 'FORGOT_PASSWORD', 'LOGIN', 'DISABLE_2FA');
+
+-- CreateEnum
+CREATE TYPE "AuditActorType" AS ENUM ('USER', 'ADMIN', 'SYSTEM');
+
+-- CreateEnum
+CREATE TYPE "OutboxStatus" AS ENUM ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED');
+
+-- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 
 -- CreateEnum
@@ -12,9 +21,6 @@ CREATE TYPE "HTTPMethod" AS ENUM ('GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTI
 
 -- CreateEnum
 CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO');
-
--- CreateEnum
-CREATE TYPE "AuditActorType" AS ENUM ('USER', 'ADMIN', 'SYSTEM');
 
 -- CreateEnum
 CREATE TYPE "DiscountType" AS ENUM ('PERCENT', 'FIXED');
@@ -42,6 +48,22 @@ CREATE TABLE "AuditLog" (
 );
 
 -- CreateTable
+CREATE TABLE "IntegrationEventOutbox" (
+    "id" TEXT NOT NULL,
+    "type" VARCHAR(255) NOT NULL,
+    "payload" JSONB NOT NULL,
+    "metadata" JSONB,
+    "status" "OutboxStatus" NOT NULL DEFAULT 'PENDING',
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "lastError" TEXT,
+    "processedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "IntegrationEventOutbox_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Language" (
     "id" VARCHAR(10) NOT NULL,
     "name" VARCHAR(500) NOT NULL,
@@ -57,9 +79,9 @@ CREATE TABLE "Language" (
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" VARCHAR(500) NOT NULL,
-    "name" VARCHAR(500) NOT NULL,
     "password" VARCHAR(500) NOT NULL,
-    "phoneNumber" VARCHAR(50) NOT NULL,
+    "name" VARCHAR(500),
+    "phoneNumber" VARCHAR(50),
     "avatar" VARCHAR(1000),
     "status" "UserStatus" NOT NULL DEFAULT 'INACTIVE',
     "roleId" INTEGER NOT NULL,
@@ -69,6 +91,20 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VerificationCode" (
+    "id" SERIAL NOT NULL,
+    "email" VARCHAR(500) NOT NULL,
+    "code" VARCHAR(100) NOT NULL,
+    "type" "VerificationCodeType" NOT NULL,
+    "usedAt" TIMESTAMP(3),
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VerificationCode_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -415,6 +451,9 @@ CREATE INDEX "AuditLog_actorId_idx" ON "AuditLog"("actorId");
 CREATE INDEX "AuditLog_createdAt_idx" ON "AuditLog"("createdAt");
 
 -- CreateIndex
+CREATE INDEX "IntegrationEventOutbox_status_createdAt_idx" ON "IntegrationEventOutbox"("status", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "Language_deletedAt_idx" ON "Language"("deletedAt");
 
 -- CreateIndex
@@ -425,6 +464,15 @@ CREATE UNIQUE INDEX "User_phoneNumber_key" ON "User"("phoneNumber");
 
 -- CreateIndex
 CREATE INDEX "User_deletedAt_idx" ON "User"("deletedAt");
+
+-- CreateIndex
+CREATE INDEX "VerificationCode_email_type_idx" ON "VerificationCode"("email", "type");
+
+-- CreateIndex
+CREATE INDEX "VerificationCode_expiresAt_idx" ON "VerificationCode"("expiresAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationCode_email_type_key" ON "VerificationCode"("email", "type");
 
 -- CreateIndex
 CREATE INDEX "UserTranslation_deletedAt_idx" ON "UserTranslation"("deletedAt");

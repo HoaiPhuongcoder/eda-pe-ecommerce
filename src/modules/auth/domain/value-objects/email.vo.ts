@@ -1,11 +1,11 @@
-import { InvalidEmailError } from '../errors/invalid-email.error';
+import { InvalidEmailException } from '@/modules/auth/domain/exceptions/vo.exception';
 
 export class Email {
   private readonly _value: string;
   constructor(value: string) {
     const normalizedEmail = value.trim().toLowerCase();
     if (!Email.isValidEmail(normalizedEmail)) {
-      throw new InvalidEmailError(normalizedEmail);
+      throw new InvalidEmailException(normalizedEmail);
     }
     this._value = normalizedEmail;
   }

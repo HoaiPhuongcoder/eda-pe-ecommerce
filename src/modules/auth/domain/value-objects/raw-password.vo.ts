@@ -1,11 +1,11 @@
-import { WeeKPasswordError } from '../errors/weak-password.error';
+import { WeakPasswordException } from '@/modules/auth/domain/exceptions/vo.exception';
 
 export class RawPassword {
   private readonly _value: string;
 
   constructor(value: string) {
     if (!RawPassword.isValidPassword(value)) {
-      throw new WeeKPasswordError();
+      throw new WeakPasswordException();
     }
     this._value = value;
   }

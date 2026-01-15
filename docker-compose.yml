@@ -10,18 +10,24 @@ services:
       POSTGRES_DB: app_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   redis:
     image: redis:7
     container_name: app-redis
     ports:
       - '6379:6379'
+    networks:
+      - app-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: app-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - app-network
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -37,6 +43,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -48,29 +56,43 @@ services:
       # Sử dụng port nội bộ 29092 và tên service 'kafka'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - app-network
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-    container_name: app-elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ports:
-      - '9200:9200'
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.12.0
-    container_name: app-kibana
-    ports:
-      - '5601:5601'
-    environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  main-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-main-api
     depends_on:
-      - elasticsearch
+      - postgres
+      - redis
+      - kafka
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/app_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKER: kafka:29092
+      # Explicitly pass these from the host environment or .env file
+      ADMIN_NAME: ${ADMIN_NAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_PHONE: ${ADMIN_PHONE}
+      # REDIS_PASSWORD can be empty, we pass it anyway
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      OTP_SECRET: ${OTP_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
-  es_data:
+
+networks:
+  app-network:
+    driver: bridge

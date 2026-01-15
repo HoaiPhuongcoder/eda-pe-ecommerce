@@ -4,4 +4,5 @@ export const AUTH_USER_REPOSITORY = Symbol('AUTH_USER_REPOSITORY');
 
 export interface AuthUserRepository {
   save(user: AuthUser): Promise<void>;
+  findByEmail(email: string): Promise<AuthUser | null>;
 }
