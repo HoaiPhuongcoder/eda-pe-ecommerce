@@ -1,7 +1,9 @@
 import { RegisterUserCommand } from '@/modules/auth/application/commands/register-user.command';
 import { VerifyOtpCommand } from '@/modules/auth/application/commands/verify-otp.command';
+import { ResendVerificationCodeCommand } from '@/modules/auth/application/commands/resend-verification-code.command';
 import { RegisterUserDto } from '@/modules/auth/application/dtos/register-user.dto';
 import { VerifyOtpDto } from '@/modules/auth/application/dtos/verify-otp.dto';
+import { ResendVerificationCodeDto } from '@/modules/auth/application/dtos/resend-verification-code.dto';
 import { ResponseMessage } from '@/shared';
 import { Body, Controller, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
@@ -21,6 +23,14 @@ export class AuthController {
   async verify(@Body() verifyDto: VerifyOtpDto) {
     await this.commandBus.execute(
       new VerifyOtpCommand(verifyDto.email, verifyDto.otp),
+    );
+  }
+
+  @ResponseMessage('Verification code resent successfully')
+  @Post('resend-code')
+  async resendCode(@Body() resendDto: ResendVerificationCodeDto) {
+    await this.commandBus.execute(
+      new ResendVerificationCodeCommand(resendDto.email),
     );
   }
 }

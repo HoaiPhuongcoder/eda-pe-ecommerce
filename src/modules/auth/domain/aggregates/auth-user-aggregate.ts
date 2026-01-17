@@ -3,6 +3,7 @@ import { InvalidOtpException } from '@/modules/auth/domain/exceptions/auth.excep
 
 import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-registered.event';
 import { UserVerifiedEvent } from '@/modules/auth/domain/events/user-verified.event';
+import { UserOtpRequestedEvent } from '@/modules/auth/domain/events/user-otp-requested.event';
 import { Email } from '@/modules/auth/domain/value-objects/email.vo';
 import { HashedPassword } from '@/modules/auth/domain/value-objects/hash-password.vo';
 import { VerificationCode } from '@/modules/auth/domain/value-objects/verification-code.vo';
@@ -103,6 +104,23 @@ export class AuthUser extends AggregateRoot {
   }
   activate(): void {
     this._status = UserStatus.ACTIVE;
+  }
+
+  requestNewVerificationCode(verificationCode: VerificationCode): void {
+    if (this._status !== UserStatus.INACTIVE) {
+      throw new Error(
+        'Can only request new verification code for inactive users',
+      );
+    }
+
+    this._verificationCode = verificationCode;
+    this.apply(
+      new UserOtpRequestedEvent(
+        this.id,
+        this.email.value,
+        verificationCode.code,
+      ),
+    );
   }
 
   assignId(id: string): void {
