@@ -1,5 +1,6 @@
 import { InfrastructureModule } from '@/infrastructure';
 import { UserRegisteredEventHandler } from '@/modules/notification/application/handlers/user-registered-event.handler';
+import { UserOtpRequestedEventHandler } from '@/modules/notification/application/handlers/user-otp-requested-event.handler';
 import { EMAIL_SENDER_PORT } from '@/modules/notification/application/ports/email-sender.port';
 import { NOTIFICATION_QUEUE_PORT } from '@/modules/notification/application/ports/queue.port';
 import { NOTIFICATION_QUEUE } from '@/modules/notification/domain/constants/queue-name.constant';
@@ -24,6 +25,7 @@ import { CqrsModule } from '@nestjs/cqrs';
   providers: [
     // Kafka Event Consumers
     UserRegisteredEventHandler,
+    UserOtpRequestedEventHandler,
 
     // BullMQ Processor
     NotificationProcessor,
