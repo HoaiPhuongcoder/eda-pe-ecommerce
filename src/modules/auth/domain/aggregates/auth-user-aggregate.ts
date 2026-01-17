@@ -1,5 +1,8 @@
 import { UserStatus } from '@/generated/prisma/enums';
-import { InvalidOtpException } from '@/modules/auth/domain/exceptions/auth.exception';
+import {
+  InvalidOtpException,
+  ResendCodeNotAllowedException,
+} from '@/modules/auth/domain/exceptions/auth.exception';
 
 import { UserRegisteredEvent } from '@/modules/auth/domain/events/user-registered.event';
 import { UserVerifiedEvent } from '@/modules/auth/domain/events/user-verified.event';
@@ -108,9 +111,7 @@ export class AuthUser extends AggregateRoot {
 
   requestNewVerificationCode(verificationCode: VerificationCode): void {
     if (this._status !== UserStatus.INACTIVE) {
-      throw new Error(
-        'Can only request new verification code for inactive users',
-      );
+      throw new ResendCodeNotAllowedException(this._status);
     }
 
     this._verificationCode = verificationCode;

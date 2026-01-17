@@ -30,3 +30,12 @@ export class UserAlreadyVerifiedException extends DomainException {
     super(`User is already verified`, HttpStatus.BAD_REQUEST);
   }
 }
+
+export class ResendCodeNotAllowedException extends DomainException {
+  constructor(status: string) {
+    super(
+      `Cannot request new verification code for user with status: ${status}`,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}
